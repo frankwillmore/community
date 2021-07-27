@@ -1,0 +1,69 @@
+#!/usr/bin/env bash 
+
+print_help() 
+{
+    printf "community [ subcommand ] [ args ]\n"
+    printf "where subcommand in { create, delete, archive }\n" 
+    printf "and args is the name of the community.\n" 
+}
+
+COMMUNITY_ROOT=/soft/community
+COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
+COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
+
+do_create() 
+{
+    PROJECT_NAME=$1
+    PROJECT_ROOT=${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
+    MODULE_ROOT=${COMMUNITY_PROJECT_MODULE_DIR}/{PROJECT_NAME}
+    
+    echo "creating community for project ${PROJECT_NAME}"
+    echo "creating software directory ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
+    echo "creating module directory ${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
+    echo "adding template module file ${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}/"
+    cp ${COMMUNITY_ROOT}/.module_templates/module_template.tcl ${COMMUNITY_PROJECT_ROOT}
+    read -s "PROJECT_NAME: " PROJECT_NAME
+    sed -ie "s/\[\[PROJECT_NAME\]\]/$PROJECT_NAME/g"
+    read -s "PROJECT_DESCRIPTION: " PROJECT_DESCRIPTION
+    sed -ie "s/\[\[PROJECT_DESCRIPTION\]\]/$PROJECT_DESCRIPTION/g"
+
+ 12 puts stderr "- Project description: [PROJECT_DESCRIPTION]]"
+ 13 puts stderr "- This software is provided by the [[PROJECT_NAME]] project."
+ 14 puts stderr "- Project contact info: [[PROJECT_CONTACT]]"
+ 15 puts stderr "- Links to additional documentation: (e.g. github, bitbucket, or gitl
+}
+
+do_delete() 
+{
+    echo "delete $1"
+}
+
+do_archive() 
+{
+    echo "archiving $1"
+    reap -p "change user ownership of ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} to community?" concur
+    if [ $concur = "y" ] || [ $concur = "yes" ] 
+    then
+        # chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} 
+        echo "chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} "
+    fi
+}
+
+[ -z ${2+x} ] && PROJECT_NAME=$2
+echo "got PROJECT_NAME=$2"
+
+#if [ $1 = "--help" ] || [ $1 = "-h" ] || [[ "$1" = "" ]]
+if [ x$1 = x"--help" ] || [ x$1 = x"-h" ] || [ x$1 = "x" ]
+then
+    print_help
+elif [ $1 = "create" ] 
+then
+    do_create $PROJECT_NAME
+elif [ $1 = "delete" ] 
+then
+    do_delete $PROJECT_NAME
+elif [ $1 = "archive" ] 
+then
+    do_archive $PROJECT_NAME
+fi
+
