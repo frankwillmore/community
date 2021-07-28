@@ -13,24 +13,34 @@ COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
 
 do_create() 
 {
+    # PROJECT_DESCRIPTION, PROJECT_NAME, PROJECT_CONTACT, and PROJECT_ROOT are all 
+    # tokens in the module template to be replaced. PROJECT_NAME is the 1st arg. 
+
     PROJECT_NAME=$1
     PROJECT_ROOT=${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
     MODULE_ROOT=${COMMUNITY_PROJECT_MODULE_DIR}/{PROJECT_NAME}
     
     echo "creating community for project ${PROJECT_NAME}"
-    echo "creating software directory ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
-    echo "creating module directory ${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
-    echo "adding template module file ${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}/"
-    cp ${COMMUNITY_ROOT}/.module_templates/module_template.tcl ${COMMUNITY_PROJECT_ROOT}
-    read -s "PROJECT_NAME: " PROJECT_NAME
-    sed -ie "s/\[\[PROJECT_NAME\]\]/$PROJECT_NAME/g"
+    echo "creating software directory ${PROJECT_ROOT}"
+    mkdir -p ${PROJECT_ROOT}
+    echo "creating module directory ${MODULE_ROOT}"
+    mkdir -p ${MODULE_ROOT}
+    echo "adding template module file ${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
+    cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${MODULE_ROOT}/${PROJECT_NAME}
+#    read -s "PROJECT_NAME: " PROJECT_NAME
     read -s "PROJECT_DESCRIPTION: " PROJECT_DESCRIPTION
-    sed -ie "s/\[\[PROJECT_DESCRIPTION\]\]/$PROJECT_DESCRIPTION/g"
+    echo "Replacing module template tokens with project info"
+    sed -ie "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g"
+    echo $PROJECT_NAME
+    sed -ie "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g"
+    echo $PROJECT_DESCRIPTION
 
- 12 puts stderr "- Project description: [PROJECT_DESCRIPTION]]"
- 13 puts stderr "- This software is provided by the [[PROJECT_NAME]] project."
- 14 puts stderr "- Project contact info: [[PROJECT_CONTACT]]"
- 15 puts stderr "- Links to additional documentation: (e.g. github, bitbucket, or gitl
+    echo "making project dirs:"
+    mkdir -p ${PROJECT_ROOT}/bin
+    mkdir -p ${PROJECT_ROOT}/share/man
+    mkdir -p ${PROJECT_ROOT}/lib64
+    mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig
+
 }
 
 do_delete() 
@@ -46,6 +56,8 @@ do_archive()
     then
         # chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} 
         echo "chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} "
+    else
+        echo "declining to update."
     fi
 }
 
