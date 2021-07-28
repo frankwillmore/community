@@ -7,7 +7,8 @@ print_help()
     printf "and args is the name of the community.\n" 
 }
 
-COMMUNITY_ROOT=/soft/community
+# COMMUNITY_ROOT=/soft/community
+: ${COMMUNITY_ROOT:="/tmp/community"}
 COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
 COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
 
