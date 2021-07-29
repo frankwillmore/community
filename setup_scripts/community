@@ -1,5 +1,17 @@
 #!/usr/bin/env bash 
 
+# Set up default values for shell variables
+# COMMUNITY_ROOT=/soft/community
+: ${COMMUNITY_SCRIPT_DEBUG:="y"}
+: ${COMMUNITY_ROOT:="/tmp/community"}
+COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
+COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
+
+debug()
+{
+    [ ${COMMUNITY_SCRIPT_DEBUG} = "y" ] && echo "DEBUG: $@"
+}
+
 cmd_help() 
 {
     printf "\n\n"
@@ -11,17 +23,6 @@ cmd_help()
     printf "For deubgging info, set COMMUNITY_SCRIPT_DEBUG=y."
     printf "\n\n"
 }
-
-debug()
-{
-    [ ${COMMUNITY_SCRIPT_DEBUG} = "y" ] && echo "DEBUG: $@"
-}
-
-# COMMUNITY_ROOT=/soft/community
-: ${COMMUNITY_SCRIPT_DEBUG:="y"}
-: ${COMMUNITY_ROOT:="/tmp/community"}
-COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
-COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
 
 cmd_create() 
 {
@@ -39,18 +40,28 @@ cmd_create()
     echo
     [ -e ${PROJECT_ROOT} ] && cmd_quit "Project ${PROJECT_NAME} already exists" 126
 
-    echo "creating software directory ${PROJECT_ROOT}"
+    read -p "Please enter brief project_description: " PROJECT_DESCRIPTION
+    debug "got PROJECT_DESCRIPTON=${PROJECT_DESCRIPTION}"
+    echo
+    read -p "Please enter project contact: " PROJECT_CONTACT
+    debug "got PROJECT_DESCRIPTON=${PROJECT_DESCRIPTION}"
+    echo
+    printf "creating software directory ${PROJECT_ROOT}..."
     mkdir -p ${PROJECT_ROOT}
-    echo "creating module directory ${MODULE_ROOT}"
+    printf "done.\n"
+    printf "creating module directory ${MODULE_ROOT}..."
     mkdir -p ${MODULE_ROOT}
-    echo "adding template module file ${MODULE_ROOT}/${PROJECT_NAME}"
-    cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${MODULE_ROOT}/${PROJECT_NAME}
-    read -p "PROJECT_DESCRIPTION: " PROJECT_DESCRIPTION
-    echo "Replacing module template tokens with project info"
-    sed -ie "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g"
-    echo $PROJECT_NAME
-    sed -ie "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g"
-    echo $PROJECT_DESCRIPTION
+    printf "done.\n"
+    TEMPLATED_MODULE=${MODULE_ROOT}/${PROJECT_NAME}
+    printf "adding template module file ${TEMPLATED_MODULE}..."
+    cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}
+    printf "done.\n"
+    printf "Replacing module template tokens with project info..."
+    sed -ie "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
+    sed -ie "s/\[\[PROJECT_ROOT\]\]/${PROJECT_ROOT}/g" ${TEMPLATED_MODULE}
+    sed -ie "s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g" ${TEMPLATED_MODULE}
+    sed -ie "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g" ${TEMPLATED_MODULE}
+    printf "done.\n"
 
     echo "making project dirs:"
     mkdir -p ${PROJECT_ROOT}/bin
@@ -71,7 +82,7 @@ cmd_delete()
     echo "preparing to delete installs in ${PROJECT_ROOT}"
     echo "and modules in ${MODULE_ROOT} for project ${PROJECT_NAME}:"
     echo
-    printf "Checking community exists...."
+    printf "Checking if community exists...."
     sleep 1
     if [ -e ${PROJECT_ROOT} ] 
     then 
@@ -81,8 +92,8 @@ cmd_delete()
         cmd_quit "Project ${PROJECT_NAME} does not exist." 126
     fi
 
-    read -p "Confirm delete (enter 'y' to confirm)? " confirm
-    [ $confirm = "y" ] || cmd_quit "Change not confirmed. Exiting." 0
+    read -p "Confirm delete \(enter 'y' to confirm\)? " confirm
+    [ ${confirm} = "y" ] || cmd_quit "Change not confirmed. Exiting." 0
 
     echo "removing software directory ${PROJECT_ROOT}"
     rm -rfv ${PROJECT_ROOT}
@@ -99,14 +110,14 @@ cmd_delete()
 cmd_archive() 
 {
     echo "archiving $1"
-    reap -p "change user ownership of ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} to community?" concur
-    if [ $concur = "y" ] || [ $concur = "yes" ] 
-    then
-        # chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} 
-        echo "chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} "
-    else
-        echo "declining to update."
-    fi
+#    read -p "change user ownership of ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} to community? (enter y to confirm)" confirm
+#    if [ $confirm = "y" ] || [ $confirm = "yes" ] 
+#    then
+#        # chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} 
+#        echo "chown -R community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
+#    else
+#        echo "declining to update."
+#    fi
 }
 
 # Print the message $1 and exit with the provided return code $2
