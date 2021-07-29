@@ -2,9 +2,9 @@
 
 cmd_help() 
 {
-    printf "community [ subcommand ] [ args ]\n"
-    printf "where subcommand in { create, delete, archive }\n" 
-    printf "and args is the name of the community.\n" 
+    printf "community [ command ] [ community_name ]\n\n"
+    printf "Where command is one of { create, delete, archive }\n" 
+    printf "and community_name is the name of the community.\n\n" 
     printf "To specify a differenet community location, set COMMUNITY_ROOT"
     printf "(Default value is COMMUNITY_ROOT=/tmp/community)"
     printf "For deubgging info, set COMMUNITY_SCRIPT_DEBUG=y."
@@ -67,10 +67,11 @@ cmd_archive()
     fi
 }
 
+# Print the message $1 and exit with the provided return code $2
 cmd_quit()
 {
     echo $1
-    exit
+    exit $2
 }
 
 #[ -z ${2+x} ] && PROJECT_NAME=$2
@@ -85,17 +86,36 @@ else
 fi
 
 #if [ $1 = "--help" ] || [ $1 = "-h" ] || [[ "$1" = "" ]]
-if [ x$1 = x"--help" ] || [ x$1 = x"-h" ] || [ x$1 = "x" ]
-then
-    cmd_help
-elif [ $1 = "create" ] 
-then
-    cmd_create ${PROJECT_NAME}
-elif [ $1 = "delete" ] 
-then
-    cmd_delete ${PROJECT_NAME}
-elif [ $1 = "archive" ] 
-then
-    cmd_archive ${PROJECT_NAME}
-fi
+#if [ x$1 = x"--help" ] || [ x$1 = x"-h" ] || [ x$1 = "x" ]
+#then
+#    cmd_help
+#elif [ $1 = "create" ] 
+#then
+#    cmd_create ${PROJECT_NAME}
+#elif [ $1 = "delete" ] 
+#then
+#    cmd_delete ${PROJECT_NAME}
+#elif [ $1 = "archive" ] 
+#then
+#    cmd_archive ${PROJECT_NAME}
+#fi
+
+# Process the actual command
+case "$1" in
+    help|-h|--help)
+        cmd_help
+        ;;
+    create)
+        cmd_create ${PROJECT_NAME}
+        ;;
+    archive)
+        cmd_archive ${PROJECT_NAME}
+        ;;
+    delete)
+        cmd_delete ${PROJECT_NAME}
+        ;;
+    *)
+        cmd_quit "Sorry, I didn't understand the command \"$1\". Exiting." 127
+        ;;
+esac
 
