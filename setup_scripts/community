@@ -58,7 +58,7 @@ cmd_create()
     printf "done.\n"
     printf "Replacing module template tokens with project info..."
     sed -ie "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
-    sed -ie "s/\[\[PROJECT_ROOT\]\]/${PROJECT_ROOT}/g" ${TEMPLATED_MODULE}
+    sed -ie "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
     sed -ie "s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g" ${TEMPLATED_MODULE}
     sed -ie "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g" ${TEMPLATED_MODULE}
     printf "done.\n"
