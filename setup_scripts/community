@@ -1,35 +1,40 @@
 #!/usr/bin/env bash 
 
-print_help() 
+cmd_help() 
 {
     printf "community [ subcommand ] [ args ]\n"
     printf "where subcommand in { create, delete, archive }\n" 
     printf "and args is the name of the community.\n" 
+    printf "To specify a differenet community location, set COMMUNITY_ROOT"
+    printf "(Default value is COMMUNITY_ROOT=/tmp/community)"
+    printf "For deubgging info, set COMMUNITY_SCRIPT_DEBUG=y."
+    printf "\n\n"
 }
 
 # COMMUNITY_ROOT=/soft/community
+: ${COMMUNITY_SCRIPT_DEBUG:="y"}
 : ${COMMUNITY_ROOT:="/tmp/community"}
 COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
 COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
 
-do_create() 
+cmd_create() 
 {
     # PROJECT_DESCRIPTION, PROJECT_NAME, PROJECT_CONTACT, and PROJECT_ROOT are all 
     # tokens in the module template to be replaced. PROJECT_NAME is the 1st arg. 
 
     PROJECT_NAME=$1
-    PROJECT_ROOT=${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
-    MODULE_ROOT=${COMMUNITY_PROJECT_MODULE_DIR}/{PROJECT_NAME}
+    PROJECT_ROOT="${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
+    MODULE_ROOT="${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
     
-    echo "creating community for project ${PROJECT_NAME}"
+    echo "creating community in ${PROJECT_ROOT} for project ${PROJECT_NAME}:"
+    echo
     echo "creating software directory ${PROJECT_ROOT}"
     mkdir -p ${PROJECT_ROOT}
     echo "creating module directory ${MODULE_ROOT}"
     mkdir -p ${MODULE_ROOT}
-    echo "adding template module file ${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
+    echo "adding template module file ${MODULE_ROOT}/${PROJECT_NAME}"
     cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${MODULE_ROOT}/${PROJECT_NAME}
-#    read -s "PROJECT_NAME: " PROJECT_NAME
-    read -s "PROJECT_DESCRIPTION: " PROJECT_DESCRIPTION
+    read -p "PROJECT_DESCRIPTION: " PROJECT_DESCRIPTION
     echo "Replacing module template tokens with project info"
     sed -ie "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g"
     echo $PROJECT_NAME
@@ -44,12 +49,12 @@ do_create()
 
 }
 
-do_delete() 
+cmd_delete() 
 {
     echo "delete $1"
 }
 
-do_archive() 
+cmd_archive() 
 {
     echo "archiving $1"
     reap -p "change user ownership of ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} to community?" concur
@@ -62,21 +67,35 @@ do_archive()
     fi
 }
 
-[ -z ${2+x} ] && PROJECT_NAME=$2
-echo "got PROJECT_NAME=$2"
+cmd_quit()
+{
+    echo $1
+    exit
+}
+
+#[ -z ${2+x} ] && PROJECT_NAME=$2
+
+PROJECT_NAME="$2"
+if [ -z ${PROJECT_NAME} ] 
+then
+    cmd_help
+    cmd_quit "no project name specified."
+else
+    [ ${COMMUNITY_SCRIPT_DEBUG} = "y" ] && echo "got PROJECT_NAME=$PROJECT_NAME"
+fi
 
 #if [ $1 = "--help" ] || [ $1 = "-h" ] || [[ "$1" = "" ]]
 if [ x$1 = x"--help" ] || [ x$1 = x"-h" ] || [ x$1 = "x" ]
 then
-    print_help
+    cmd_help
 elif [ $1 = "create" ] 
 then
-    do_create $PROJECT_NAME
+    cmd_create ${PROJECT_NAME}
 elif [ $1 = "delete" ] 
 then
-    do_delete $PROJECT_NAME
+    cmd_delete ${PROJECT_NAME}
 elif [ $1 = "archive" ] 
 then
-    do_archive $PROJECT_NAME
+    cmd_archive ${PROJECT_NAME}
 fi
 
