@@ -34,6 +34,11 @@ cmd_create()
     
     echo "creating community in ${PROJECT_ROOT} for project ${PROJECT_NAME}:"
     echo
+
+    echo "Checking community doesn't already exist...."
+    echo
+    [ -e ${PROJECT_ROOT} ] && cmd_quit "Project ${PROJECT_NAME} already exists" 126
+
     echo "creating software directory ${PROJECT_ROOT}"
     mkdir -p ${PROJECT_ROOT}
     echo "creating module directory ${MODULE_ROOT}"
@@ -57,7 +62,38 @@ cmd_create()
 
 cmd_delete() 
 {
-    echo "delete $1"
+    debug "deleting $1"
+
+    PROJECT_NAME=$1
+    PROJECT_ROOT="${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
+    MODULE_ROOT="${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
+    
+    echo "preparing to delete installs in ${PROJECT_ROOT}"
+    echo "and modules in ${MODULE_ROOT} for project ${PROJECT_NAME}:"
+    echo
+    printf "Checking community exists...."
+    sleep 1
+    if [ -e ${PROJECT_ROOT} ] 
+    then 
+        printf "yes.\n\n"
+    else 
+        printf "no.\n\n"
+        cmd_quit "Project ${PROJECT_NAME} does not exist." 126
+    fi
+
+    read -p "Confirm delete (enter 'y' to confirm)? " confirm
+    [ $confirm = "y" ] || cmd_quit "Change not confirmed. Exiting." 0
+
+    echo "removing software directory ${PROJECT_ROOT}"
+    rm -rfv ${PROJECT_ROOT}
+    echo
+
+    echo "deleting module directory ${MODULE_ROOT}"
+    rm -rfv ${MODULE_ROOT}
+    echo
+
+    echo "Done!"
+    echo
 }
 
 cmd_archive() 
@@ -76,11 +112,10 @@ cmd_archive()
 # Print the message $1 and exit with the provided return code $2
 cmd_quit()
 {
-    echo $1
+    echo "FAIL: $1"
+    echo "FAIL: exiting with code $2"
     exit $2
 }
-
-#[ -z ${2+x} ] && PROJECT_NAME=$2
 
 PROJECT_NAME="$2"
 if [ -z ${PROJECT_NAME} ] 
