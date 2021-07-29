@@ -2,13 +2,19 @@
 
 cmd_help() 
 {
-    printf "community [ command ] [ community_name ]\n\n"
-    printf "Where command is one of { create, delete, archive }\n" 
-    printf "and community_name is the name of the community.\n\n" 
-    printf "To specify a differenet community location, set COMMUNITY_ROOT"
+    printf "\n\n"
+    printf "\tcommunity [ command ] [ community_name ]\n\n"
+    printf "\tWhere command is one of { create, delete, archive }\n" 
+    printf "\tand community_name is the name of the community.\n\n" 
+    printf "To specify a differenet community location, set COMMUNITY_ROOT\n"
     printf "(Default value is COMMUNITY_ROOT=/tmp/community)"
     printf "For deubgging info, set COMMUNITY_SCRIPT_DEBUG=y."
     printf "\n\n"
+}
+
+debug()
+{
+    [ ${COMMUNITY_SCRIPT_DEBUG} = "y" ] && echo "DEBUG: $@"
 }
 
 # COMMUNITY_ROOT=/soft/community
@@ -82,23 +88,8 @@ then
     cmd_help
     cmd_quit "no project name specified."
 else
-    [ ${COMMUNITY_SCRIPT_DEBUG} = "y" ] && echo "got PROJECT_NAME=$PROJECT_NAME"
+    debug "got PROJECT_NAME=$PROJECT_NAME" "and some other info"
 fi
-
-#if [ $1 = "--help" ] || [ $1 = "-h" ] || [[ "$1" = "" ]]
-#if [ x$1 = x"--help" ] || [ x$1 = x"-h" ] || [ x$1 = "x" ]
-#then
-#    cmd_help
-#elif [ $1 = "create" ] 
-#then
-#    cmd_create ${PROJECT_NAME}
-#elif [ $1 = "delete" ] 
-#then
-#    cmd_delete ${PROJECT_NAME}
-#elif [ $1 = "archive" ] 
-#then
-#    cmd_archive ${PROJECT_NAME}
-#fi
 
 # Process the actual command
 case "$1" in
