@@ -1,6 +1,5 @@
 #!/usr/bin/env bash 
 
-# set COMMUNITY_ROOT to default if unset
 : ${COMMUNITY_ROOT:=/tmp/community}
 
 # Source .communityrc to pick up local values
@@ -85,10 +84,10 @@ cmd_create()
     printf "done.\n"
 
     printf "Replacing module template tokens with project info..."
-    sed -ie "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
-    sed -ie "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
-    sed -ie "s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g" ${TEMPLATED_MODULE}
-    sed -ie "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g" ${TEMPLATED_MODULE}
+    sed -i -e "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
+    sed -i -e "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
+    sed -i -e "s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g" ${TEMPLATED_MODULE}
+    sed -i -e "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g" ${TEMPLATED_MODULE}
     printf "done.\n"
 
     echo "making project dirs:"
@@ -121,7 +120,7 @@ cmd_delete()
         cmd_quit "Project ${PROJECT_NAME} does not exist." 126
     fi
 
-    read -p "Confirm delete \(enter 'y' to confirm\)? " confirm
+    read -p "Confirm delete (enter 'y' to confirm)? " confirm
     [ ${confirm} = "y" ] || cmd_quit "Change not confirmed. Exiting." 0
 
     echo "removing software directory ${PROJECT_ROOT}"
