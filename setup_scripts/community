@@ -1,10 +1,12 @@
 #!/usr/bin/env bash 
 
-# Source .communityrc to pick up any local default values
-. ../etc/.communityrc
-
-# point default values to /tmp if none found
+# set COMMUNITY_ROOT to default if unset
 : ${COMMUNITY_ROOT:=/tmp/community}
+
+# Source .communityrc to pick up local values
+[ -e ${COMMUNITY_ROOT}/etc/.communityrc ] && . ${COMMUNITY_ROOT}/etc/.communityrc
+
+# set defaults if not found in .communityrc
 : ${COMMUNITY_SCRIPT_DEBUG:="y"}
 : ${COMMUNITY_ROOT:="/tmp/community"}
 : ${EXISTING_PROJECT_PATH:="/projects"}
