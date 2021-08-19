@@ -18,10 +18,6 @@ puts stderr "- Links to additional documentation: (e.g. github, bitbucket, or gi
 
 set PROJECT_ROOT [[PROJECT_ROOT]]
 
-#set project_name_PREFIX /projects/project_name/opt/project_name
-
-#set project_name_PATH ${project_name_PREFIX}/bin
-#prepend-path PATH $project_name_PATH
 set project_name_PATH ${PROJECT_ROOT}/bin
 prepend-path PATH $project_name_PATH
  

@@ -1,0 +1,12 @@
+# 
+# .communityrc :: resource file containing default vals of vars
+#                 sourced when running community commands
+#
+
+# COMMUNITY_ROOT=/soft/community
+COMMUNITY_ROOT=/tmp/community
+COMMUNITY_SCRIPT_DEBUG="y"
+
+EXISTING_PROJECT_PATH=/projects:/grand/projects:/eagle/projects
+
+

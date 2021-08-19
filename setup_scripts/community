@@ -1,9 +1,14 @@
 #!/usr/bin/env bash 
 
-# Set up default values for shell variables
-# COMMUNITY_ROOT=/soft/community
+# Source .communityrc to pick up any local default values
+. ../etc/.communityrc
+
+# point default values to /tmp if none found
+: ${COMMUNITY_ROOT:=/tmp/community}
 : ${COMMUNITY_SCRIPT_DEBUG:="y"}
 : ${COMMUNITY_ROOT:="/tmp/community"}
+: ${EXISTING_PROJECT_PATH:="/projects"}
+
 COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
 COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
 
@@ -32,6 +37,20 @@ cmd_create()
     PROJECT_NAME=$1
     PROJECT_ROOT="${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
     MODULE_ROOT="${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
+
+    # check project eligibility
+    eligible="false"
+    for path in $(echo ${EXISTING_PROJECT_PATH} | sed -e "s/:/ /g")
+    do
+        debug "searching ${path}..."
+        echo ${path}/${PROJECT_NAME} 
+        if [ -e ${path}/${PROJECT_NAME} ] 
+        then 
+            eligible="true" 
+            echo "found elgible path: ${path}/${PROJECT_NAME}"
+        fi
+    done
+    [ ${eligible} = "true" ] || cmd_quit "Project ${PROJECT_NAME} not found." 126
     
     echo "creating community in ${PROJECT_ROOT} for project ${PROJECT_NAME}:"
     echo
@@ -40,22 +59,29 @@ cmd_create()
     echo
     [ -e ${PROJECT_ROOT} ] && cmd_quit "Project ${PROJECT_NAME} already exists" 126
 
+    # All is well, fill out module template fields.
+
     read -p "Please enter brief project_description: " PROJECT_DESCRIPTION
     debug "got PROJECT_DESCRIPTON=${PROJECT_DESCRIPTION}"
     echo
+
     read -p "Please enter project contact: " PROJECT_CONTACT
     debug "got PROJECT_DESCRIPTON=${PROJECT_DESCRIPTION}"
     echo
+
     printf "creating software directory ${PROJECT_ROOT}..."
     mkdir -p ${PROJECT_ROOT}
     printf "done.\n"
+
     printf "creating module directory ${MODULE_ROOT}..."
     mkdir -p ${MODULE_ROOT}
     printf "done.\n"
+
     TEMPLATED_MODULE=${MODULE_ROOT}/${PROJECT_NAME}
     printf "adding template module file ${TEMPLATED_MODULE}..."
     cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}
     printf "done.\n"
+
     printf "Replacing module template tokens with project info..."
     sed -ie "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
     sed -ie "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
@@ -69,6 +95,7 @@ cmd_create()
     mkdir -p ${PROJECT_ROOT}/lib64
     mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig
 
+    printf "done.\n"
 }
 
 cmd_delete() 
