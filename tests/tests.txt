@@ -1,0 +1,14 @@
+
+# all tests will set DEBUG and capture output from there 
+
+export COMMUNITY_SCRIPT_DEBUG=y
+
+eligible project created correctly
+ineligible project not created
+
+duplicate project won't create
+
+archived project has correct permissions
+deleted project deletes correctly
+
+
