@@ -20,14 +20,15 @@ debug()
 
 cmd_help() 
 {
-    printf "\n\n"
-    printf "\tcommunity [ command ] [ community_name ]\n\n"
-    printf "\tWhere command is one of { create, delete, archive }\n" 
-    printf "\tand community_name is the name of the community.\n\n" 
-    printf "To specify a differenet community location, set COMMUNITY_ROOT\n"
-    printf "(Default value is COMMUNITY_ROOT=/tmp/community)"
+    printf "\n"
+    printf "usage: community [ command ] [ community_name ]\n\n"
+    printf "Where command is one of { create, delete, archive }\n" 
+    printf "and community_name is the name of the community.\n\n" 
+    printf "To specify a different community location, set COMMUNITY_ROOT\n"
+    printf "(Default value is COMMUNITY_ROOT=/tmp/community)\n\n"
     printf "For deubgging info, set COMMUNITY_SCRIPT_DEBUG=y."
-    printf "\n\n"
+    printf "\n"
+    printf "\n"
 }
 
 cmd_create() 
@@ -156,18 +157,19 @@ cmd_quit()
     exit $2
 }
 
+# Where script execution begins
 PROJECT_NAME="$2"
-if [ -z ${PROJECT_NAME} ] 
-then
-    cmd_help
-    cmd_quit "no project name specified."
-else
-    debug "got PROJECT_NAME=$PROJECT_NAME" "and some other info"
-fi
+#if [ -z ${PROJECT_NAME} ] 
+#then
+#    cmd_help
+#    cmd_quit "no project name specified."
+#else
+#    debug "got PROJECT_NAME=$PROJECT_NAME" "and some other info"
+#fi
 
 # Process the actual command
 case "$1" in
-    help|-h|--help)
+    ""|help|-h|--help)
         cmd_help
         ;;
     create)
