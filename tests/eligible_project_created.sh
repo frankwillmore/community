@@ -1,0 +1,3 @@
+community create foo
+
+
