@@ -1,7 +1,12 @@
 #!/usr/bin/env bash 
 
+# (C) 2021 Argonne Leadership Computing Facility, with primary concept by Frank Willmore
+# This is free software with no implied warranty.
+
 : ${COMMUNITY_ROOT:=/tmp/community}
 : ${GENERATE_COMMANDS_ONLY:=true}
+: ${PROJECT_USER_OWNER:=community}
+: ${PROJECT_GROUP_OWNER:=community}
 
 # Source .communityrc to pick up local values
 [ -e ${COMMUNITY_ROOT}/etc/.communityrc ] && . ${COMMUNITY_ROOT}/etc/.communityrc
@@ -22,16 +27,20 @@ debug()
 cmd_help() 
 {
     printf "\n"
-    printf "usage: community [ command ] [ community_name ]\n\n"
+    printf "usage: community [ command ] [ community_name ]\n"
+    printf "\n"
     printf "Where command is one of { create, delete, archive }\n" 
-    printf "and community_name is the name of the community.\n\n" 
+    printf "and community_name is the name of the community.\n"
+    printf "\n" 
     printf "To specify a different community location, set COMMUNITY_ROOT\n"
-    printf "(Default value is COMMUNITY_ROOT=/tmp/community)\n\n"
+    printf "(Default value is COMMUNITY_ROOT=/tmp/community)\n"
+    printf "\n"
     printf "For deubgging info, set COMMUNITY_SCRIPT_DEBUG=y.\n"
     printf "\n"
-    printf "By default, commands will be generated and printed stdout.\n"
-    printf "Use with caution! To automatically execute commands,\n"
-    printf "set GENERATE_COMMANDS_ONLT=false\n"
+    printf "By default, this program runs in 'safe mode', i.e."
+    printf "commands will be generated and printed stdout but not executed.\n"
+    printf "To automatically execute generated commands,\n"
+    printf "set GENERATE_COMMANDS_ONLY to any value besides \"true\".\n"
     printf "\n"
     printf "\n"
 }
@@ -84,44 +93,79 @@ cmd_create()
     debug "got PROJECT_GROUP_OWNER=${PROJECT_GROUP_OWNER}"
     echo
 
+    # Done gathering info, now go do it.
+
     printf "creating software directory ${PROJECT_ROOT}..."
-    mkdir -p ${PROJECT_ROOT}
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "mkdir -p ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+    else 
+        mkdir -p ${PROJECT_ROOT}
+    fi
     printf "done.\n"
 
     printf "creating module directory ${MODULE_ROOT}..."
-    mkdir -p ${MODULE_ROOT}
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "mkdir -p ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
+    else
+        mkdir -p ${MODULE_ROOT}
+    fi
     printf "done.\n"
 
     TEMPLATED_MODULE=${MODULE_ROOT}/${PROJECT_NAME}
     printf "adding template module file ${TEMPLATED_MODULE}..."
-    cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+    else 
+        cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}
+    fi
     printf "done.\n"
 
     printf "Replacing module template tokens with project info..."
-    sed -i -e "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
-    sed -i -e "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
-    sed -i -e "s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g" ${TEMPLATED_MODULE}
-    sed -i -e "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g" ${TEMPLATED_MODULE}
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "sed -i -e \"s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sed -i -e \"s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sed -i -e \"s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sed -i -e \"s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+    else
+        sed -i -e "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
+        sed -i -e "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
+        sed -i -e "s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g" ${TEMPLATED_MODULE}
+        sed -i -e "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g" ${TEMPLATED_MODULE}
+    fi
     printf "done.\n"
 
     echo "making project dirs:"
-    mkdir -p ${PROJECT_ROOT}/bin
-    mkdir -p ${PROJECT_ROOT}/share/man
-    mkdir -p ${PROJECT_ROOT}/lib64
-    mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "mkdir -p ${PROJECT_ROOT}/bin" | tee -a ${CMD_SCRIPT} 
+        echo "mkdir -p ${PROJECT_ROOT}/share/man" | tee -a ${CMD_SCRIPT} 
+        echo "mkdir -p ${PROJECT_ROOT}/lib64" | tee -a ${CMD_SCRIPT} 
+        echo "mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig" | tee -a ${CMD_SCRIPT} 
+    else
+        mkdir -p ${PROJECT_ROOT}/bin
+        mkdir -p ${PROJECT_ROOT}/share/man
+        mkdir -p ${PROJECT_ROOT}/lib64
+        mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig
+    fi
 
     echo "setting ownership..."
     
-    if [ ${GENERATE_COMMANDS_ONLY} != "true" ]
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
     then
+        echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
+    else
         sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}
         sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}
-    else
-        echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}"
-        sudo "chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}"
     fi
 
     printf "done.\n"
+
+    cmd_exit 0
 }
 
 cmd_delete() 
@@ -149,17 +193,36 @@ cmd_delete()
     [ ${confirm} == "y" ] || cmd_quit "Change not confirmed. Exiting." 0
 
     echo "removing software directory ${PROJECT_ROOT}"
-    [ ${GENERATE_COMMANDS_ONLY} != "true" ] && rm -rfv ${PROJECT_ROOT}
-    echo "sudo rm -rfv ${PROJECT_ROOT}"
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "sudo rm -rfv ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+    else
+        rm -rfv ${PROJECT_ROOT}
+    fi
+    echo
+
+    echo "removing software directory ${PROJECT_ROOT}"
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ] 
+    then
+        echo "sudo rm -rfv ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+    else
+        rm -rfv ${PROJECT_ROOT}
+    fi
     echo
 
     echo "deleting module directory ${MODULE_ROOT}"
-    [ ${GENERATE_COMMANDS_ONLY} != "true" ] && rm -rfv ${MODULE_ROOT}
-    echo "sudo rm -rfv ${MODULE_ROOT}"
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "sudo rm -rfv ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
+    else
+        rm -rfv ${MODULE_ROOT}
+    fi
     echo
 
     echo "Done!"
     echo
+
+    cmd_exit 0
 }
 
 cmd_archive() 
@@ -169,21 +232,42 @@ cmd_archive()
     read -p "(enter y to confirm) " confirm
     if [ $confirm = "y" ] || [ $confirm = "yes" ] 
     then
-        if [ ${GENERATE_COMMANDS_ONLY} != "true" ]
+        if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
         then
+            # echo "  sudo chown -R community:community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
+            # Below line is just placeholder until we set up community user and group
+            echo "  sudo chown -R spack:software ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
+            echo "  sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
+        else
             # sudo chown -R community:community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
             # Below line is just placeholder until we set up community user and group
             sudo chown -R spack:software ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
             sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
         fi
-        echo "Examine the following carefully before running:"
-        # echo "  sudo chown -R community:community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
-        # Below line is just placeholder until we set up community user and group
-        echo "  sudo chown -R spack:software ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
-        echo "  sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
     else
         echo "declining to update."
     fi
+
+    cmd_exit 0
+}
+
+cmd_exit()
+{ 
+echo "FTW: in cmd_exit()"
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]  
+    then 
+        echo 
+        echo
+        echo "Commands generated. Examine the following script and, if satisfied, run as sudo."
+        echo 
+        echo "# <===== BEGIN ====>"
+        cat ${CMD_SCRIPT}
+        echo "# <====== END =====>"
+        echo "====
+        
+        rm ${CMD_SCRIPT}
+    fi
+    exit $2
 }
 
 # Print the message $1 and exit with the provided return code $2
@@ -194,15 +278,11 @@ cmd_quit()
     exit $2
 }
 
-# Where script execution begins
+# Script execution begins here.
+
 PROJECT_NAME="$2"
-#if [ -z ${PROJECT_NAME} ] 
-#then
-#    cmd_help
-#    cmd_quit "no project name specified."
-#else
-#    debug "got PROJECT_NAME=$PROJECT_NAME" "and some other info"
-#fi
+[ ${GENERATE_COMMANDS_ONLY} == "true" ] && CMD_SCRIPT=$(mktemp)
+echo "using CMD_SCRIPT as $CMD_SCRIPT"
 
 # Process the actual command
 case "$1" in
