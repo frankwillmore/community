@@ -1,14 +1,12 @@
+To do:
 
-# all tests will set DEBUG and capture output from there 
+Implement tests for each of the following:
 
-export COMMUNITY_SCRIPT_DEBUG=y
+- eligible project created correctly
+- ineligible project not created
+- duplicate project won't create
+- archived project has correct permissions
+- deleted project deletes correctly
 
-eligible project created correctly
-ineligible project not created
-
-duplicate project won't create
-
-archived project has correct permissions
-deleted project deletes correctly
-
+These are interactive, and need some fancy scripting.
 

@@ -3,21 +3,20 @@
 # (C) 2021 Argonne Leadership Computing Facility, with primary concept by Frank Willmore
 # This is free software with no implied warranty.
 
-: ${COMMUNITY_ROOT:=/tmp/community}
-: ${GENERATE_COMMANDS_ONLY:=true}
-: ${PROJECT_USER_OWNER:=community}
-: ${PROJECT_GROUP_OWNER:=community}
-
 # Source .communityrc to pick up local values
 [ -e ${COMMUNITY_ROOT}/etc/.communityrc ] && . ${COMMUNITY_ROOT}/etc/.communityrc
 
 # set defaults if not found in .communityrc
-: ${COMMUNITY_SCRIPT_DEBUG:="y"}
+: ${COMMUNITY_ROOT:=/tmp/community}
+: ${GENERATE_COMMANDS_ONLY:=true}
+: ${COMMUNITY_SCRIPT_DEBUG:="n"}
 : ${COMMUNITY_ROOT:="/tmp/community"}
 : ${EXISTING_PROJECT_PATH:="/projects"}
+: ${COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects}
+: ${COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles}
 
-COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
-COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
+#COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects
+#COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles
 
 debug()
 {
@@ -98,7 +97,7 @@ cmd_create()
     printf "creating software directory ${PROJECT_ROOT}..."
     if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
     then
-        echo "mkdir -p ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo mkdir -p ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
     else 
         mkdir -p ${PROJECT_ROOT}
     fi
@@ -107,7 +106,7 @@ cmd_create()
     printf "creating module directory ${MODULE_ROOT}..."
     if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
     then
-        echo "mkdir -p ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo mkdir -p ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
     else
         mkdir -p ${MODULE_ROOT}
     fi
@@ -117,7 +116,7 @@ cmd_create()
     printf "adding template module file ${TEMPLATED_MODULE}..."
     if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
     then
-        echo "cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
     else 
         cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}
     fi
@@ -126,10 +125,10 @@ cmd_create()
     printf "Replacing module template tokens with project info..."
     if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
     then
-        echo "sed -i -e \"s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-        echo "sed -i -e \"s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-        echo "sed -i -e \"s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-        echo "sed -i -e \"s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo sed -i -e \"s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo sed -i -e \"s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo sed -i -e \"s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo sed -i -e \"s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
     else
         sed -i -e "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
         sed -i -e "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
@@ -141,10 +140,10 @@ cmd_create()
     echo "making project dirs:"
     if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
     then
-        echo "mkdir -p ${PROJECT_ROOT}/bin" | tee -a ${CMD_SCRIPT} 
-        echo "mkdir -p ${PROJECT_ROOT}/share/man" | tee -a ${CMD_SCRIPT} 
-        echo "mkdir -p ${PROJECT_ROOT}/lib64" | tee -a ${CMD_SCRIPT} 
-        echo "mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig" | tee -a ${CMD_SCRIPT} 
+        echo "sudo mkdir -p ${PROJECT_ROOT}/bin" | tee -a ${CMD_SCRIPT} 
+        echo "sudo mkdir -p ${PROJECT_ROOT}/share/man" | tee -a ${CMD_SCRIPT} 
+        echo "sudo mkdir -p ${PROJECT_ROOT}/lib64" | tee -a ${CMD_SCRIPT} 
+        echo "sudo mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig" | tee -a ${CMD_SCRIPT} 
     else
         mkdir -p ${PROJECT_ROOT}/bin
         mkdir -p ${PROJECT_ROOT}/share/man
@@ -234,14 +233,10 @@ cmd_archive()
     then
         if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
         then
-            # echo "  sudo chown -R community:community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
-            # Below line is just placeholder until we set up community user and group
-            echo "  sudo chown -R spack:software ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
-            echo "  sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
+            echo "sudo chown -R ${ARCHIVE_USER_OWNER}:${ARCHIVE_GROUP_OWNER} ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
+            echo "sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
         else
-            # sudo chown -R community:community ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
-            # Below line is just placeholder until we set up community user and group
-            sudo chown -R spack:software ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
+            sudo chown -R ${ARCHIVE_USER_OWNER}:${ARCHIVE_GROUP_OWNER} ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
             sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
         fi
     else
@@ -253,21 +248,22 @@ cmd_archive()
 
 cmd_exit()
 { 
-echo "FTW: in cmd_exit()"
     if [ ${GENERATE_COMMANDS_ONLY} == "true" ]  
     then 
         echo 
         echo
-        echo "Commands generated. Examine the following script and, if satisfied, run as sudo."
+        echo "Commands generated."
+        echo
+        echo "Examine the following script and, if satisfied, run as sudo."
         echo 
         echo "# <===== BEGIN ====>"
         cat ${CMD_SCRIPT}
         echo "# <====== END =====>"
-        echo "====
+        echo
         
         rm ${CMD_SCRIPT}
     fi
-    exit $2
+    exit $1
 }
 
 # Print the message $1 and exit with the provided return code $2
@@ -282,7 +278,6 @@ cmd_quit()
 
 PROJECT_NAME="$2"
 [ ${GENERATE_COMMANDS_ONLY} == "true" ] && CMD_SCRIPT=$(mktemp)
-echo "using CMD_SCRIPT as $CMD_SCRIPT"
 
 # Process the actual command
 case "$1" in
