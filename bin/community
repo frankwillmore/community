@@ -3,6 +3,17 @@
 # (C) 2021 Argonne Leadership Computing Facility, with primary concept by Frank Willmore
 # This is free software with no implied warranty.
 
+# Print the message $1 and exit with the provided return code $2
+cmd_quit()
+{
+    echo "FAIL: $1"
+    echo "FAIL: exiting with code $2"
+    exit $2
+}
+
+# Make sure that COMMUNITY_ROOT is set and exit if it is not.
+[ -z ${COMMUNITY_ROOT} ] && cmd_quit "COMMUNITY_ROOT must be set to run community commands" 126
+
 # Source .communityrc to pick up local values
 [ -e ${COMMUNITY_ROOT}/etc/.communityrc ] && . ${COMMUNITY_ROOT}/etc/.communityrc
 
@@ -264,14 +275,6 @@ cmd_exit()
         rm ${CMD_SCRIPT}
     fi
     exit $1
-}
-
-# Print the message $1 and exit with the provided return code $2
-cmd_quit()
-{
-    echo "FAIL: $1"
-    echo "FAIL: exiting with code $2"
-    exit $2
 }
 
 # Script execution begins here.

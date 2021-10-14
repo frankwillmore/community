@@ -3,8 +3,8 @@
 #                 sourced when running community commands
 #
 
-# COMMUNITY_ROOT=/soft/community
-COMMUNITY_ROOT=/tmp/community
+COMMUNITY_ROOT=/soft/community
+# COMMUNITY_ROOT=/tmp/community
 
 ARCHIVE_USER_OWNER=community
 ARCHIVE_GROUP_OWNER=community
