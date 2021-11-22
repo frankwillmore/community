@@ -19,6 +19,7 @@ cmd_quit()
 
 # set defaults if not found in .communityrc
 : ${COMMUNITY_ROOT:=/tmp/community}
+: ${COMMUNITY_FILESYSTEM:=/lus/theta-fs0}
 : ${GENERATE_COMMANDS_ONLY:=true}
 : ${COMMUNITY_SCRIPT_DEBUG:="n"}
 : ${COMMUNITY_ROOT:="/tmp/community"}
@@ -171,6 +172,15 @@ cmd_create()
     else
         sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}
         sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}
+    fi
+
+    echo "setting quota..."
+    
+    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    then
+        echo "sudo lfs setquota -g ${PROJECT_NAME} --block-softlimit 100G --block-hardlimit 105G ${COMMUNITY_FILESYSTEM}" | tee -a ${CMD_SCRIPT}
+    else
+        echo "sudo lfs setquota -g ${PROJECT_NAME} --block-softlimit 100G --block-hardlimit 105G ${COMMUNITY_FILESYSTEM}"
     fi
 
     printf "done.\n"
