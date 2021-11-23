@@ -3,6 +3,9 @@
 #                 sourced when running community commands
 #
 
+# Name of filesystem where quotas are managed for the community software installation
+COMMUNITY_FILESYSTEM=/lus/theta-fs0
+
 # Where this software is installed
 COMMUNITY_ROOT=/soft/community
 
