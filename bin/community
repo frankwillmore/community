@@ -12,16 +12,15 @@ cmd_quit()
 }
 
 # Make sure that COMMUNITY_ROOT is set and exit if it is not.
-[ -z ${COMMUNITY_ROOT} ] && cmd_quit "COMMUNITY_ROOT must be set to run community commands" 126
+[ -z ${COMMUNITY_ROOT} ] && cmd_quit "COMMUNITY_ROOT must be set (e.g. to /soft/community) to run community commands" 126
 
 # Source .communityrc to pick up local values
 [ -e ${COMMUNITY_ROOT}/etc/.communityrc ] && . ${COMMUNITY_ROOT}/etc/.communityrc
 
 # set defaults if not found in .communityrc
-: ${COMMUNITY_ROOT:=/tmp/community}
 : ${GENERATE_COMMANDS_ONLY:=true}
 : ${COMMUNITY_SCRIPT_DEBUG:="n"}
-: ${COMMUNITY_ROOT:="/tmp/community"}
+: ${COMMUNITY_ROOT:="/soft/community"}
 : ${EXISTING_PROJECT_PATH:="/projects"}
 : ${COMMUNITY_PROJECT_DIR=${COMMUNITY_ROOT}/projects}
 : ${COMMUNITY_PROJECT_MODULE_DIR=${COMMUNITY_ROOT}/modulefiles}
@@ -204,15 +203,6 @@ cmd_delete()
 
     echo "removing software directory ${PROJECT_ROOT}"
     if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo rm -rfv ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
-    else
-        rm -rfv ${PROJECT_ROOT}
-    fi
-    echo
-
-    echo "removing software directory ${PROJECT_ROOT}"
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ] 
     then
         echo "sudo rm -rfv ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
     else
