@@ -3,6 +3,7 @@ Welcome to ALCF community software!  Community Software publishers are expected 
 You're project has been granted space in /soft/community/projects and /soft/community/modulefiles to publish your community builds and corresponding modules, and you have been given an initial module file generated from a template. Community software published here for your project can be loaded by first loading the community meta-module, e.g.:
 
 $ module load community 
+
 $ module load my_project
 
 Please make sure the module you maintain here for your software is in a workable state, as a malformed module will break the module system for all community software projects. If you are unsure about the effects of your module changes, then DO NOT CHANGE THIS MODULE FILE. To test a new module version, do so in a different path and test it using the 'module use /path/to/modules/directory' command. If you have questions, reach out to a system administrator. If your published module breaks the community software module system, it will be purged, and nobody wants that. 
