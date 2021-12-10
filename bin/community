@@ -271,9 +271,22 @@ cmd_exit()
         cat ${CMD_SCRIPT}
         echo "# <====== END =====>"
         echo
-        
-        rm ${CMD_SCRIPT}
     fi
+    
+    read -p "Run the generated script (y/n)? " run_generated_script
+    if [ $run_generated_script = "y" ] || [ $run_generated_script = "yes" ] 
+    then
+        echo
+        . ${CMD_SCRIPT}
+        echo
+    else
+        echo
+        echo "Script not run."
+        echo
+    fi
+        
+    rm ${CMD_SCRIPT}
+
     exit $1
 }
 
