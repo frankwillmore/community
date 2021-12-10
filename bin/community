@@ -265,7 +265,7 @@ cmd_exit()
         echo
         echo "Commands generated."
         echo
-        echo "Examine the following script and, if satisfied, run as sudo."
+        echo "Please examine the following generated script before running."
         echo 
         echo "# <===== BEGIN ====>"
         cat ${CMD_SCRIPT}
