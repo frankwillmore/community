@@ -25,3 +25,6 @@ COMMUNITY_SCRIPT_DEBUG="n"
 
 # Whether to execute generated commands (danger!) or to run in 'safe mode'
 GENERATE_COMMANDS_ONLY=true
+
+# Extended regular expression to use when validating inputs
+COMMUNITY_VALIDATE_INPUT_REGEX="^[0-9a-zA-Z\.\:\;\(\)\ -]+$"        

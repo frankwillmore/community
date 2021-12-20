@@ -15,7 +15,7 @@ cmd_quit()
 [ -z "${COMMUNITY_ROOT}" ] && cmd_quit "COMMUNITY_ROOT must be set (e.g. to /soft/community) to run community commands" 126
 
 # Source .communityrc to pick up local values
-[ -e "${COMMUNITY_ROOT}"/etc/.communityrc ] && . $"{COMMUNITY_ROOT}"/etc/.communityrc
+[ -e "${COMMUNITY_ROOT}/etc/.communityrc" ] && . "${COMMUNITY_ROOT}/etc/.communityrc"
 
 # set defaults if not found in .communityrc
 : "${COMMUNITY_FILESYSTEM:='/lus/theta-fs0'}"
@@ -32,6 +32,27 @@ cmd_quit()
 debug()
 {
     [ "${COMMUNITY_SCRIPT_DEBUG}" = "y" ] && echo "DEBUG: $*"
+}
+
+# Poll for input, then make sure it matches only characters in regular expression.
+# If it does not, reject it and poll again. 
+
+request_and_validate_input()
+{
+    COMMUNITY_VALIDATED_INPUT=""
+    while [ "${COMMUNITY_VALIDATED_INPUT}" = "" ]
+    do  
+        read -p "$1" COMMUNITY_UNVALIDATED_INPUT
+        echo "${COMMUNITY_UNVALIDATED_INPUT}" | egrep "${COMMUNITY_VALIDATE_INPUT_REGEX}" 
+        if [ "$?" = 0 ] 
+        then
+            COMMUNITY_VALIDATED_INPUT="${COMMUNITY_UNVALIDATED_INPUT}"
+            return
+        else
+            printf "Input not valid, must use only characters in regular expression: \n" 
+            printf "${COMMUNITY_VALIDATE_INPUT_REGEX}\n\n"
+        fi  
+    done
 }
 
 cmd_help() 
@@ -87,19 +108,23 @@ cmd_create()
 
     # All is well, fill out module template fields.
 
-    read -p "Please enter brief project_description: " PROJECT_DESCRIPTION
+    request_and_validate_input "Please enter brief project_description: "
+    PROJECT_DESCRIPTION="${COMMUNITY_VALIDATED_INPUT}"
     debug "got PROJECT_DESCRIPTON=${PROJECT_DESCRIPTION}"
     echo
 
-    read -p "Please enter project contact: " PROJECT_CONTACT
-    debug "got PROJECT_DESCRIPTON=${PROJECT_DESCRIPTION}"
+    request_and_validate_input "Please enter project contact: "
+    PROJECT_CONTACT="${COMMUNITY_VALIDATED_INPUT}"
+    debug "got PROJECT_CONTACT=${PROJECT_CONTACT}"
     echo
 
-    read -p "Please enter project user owner: " PROJECT_USER_OWNER
+    request_and_validate_input "Please enter project user owner: "
+    PROJECT_USER_OWNER="${COMMUNITY_VALIDATED_INPUT}"
     debug "got PROJECT_USER_OWNER=${PROJECT_USER_OWNER}"
     echo
 
-    read -p "Please enter project group owner: " PROJECT_GROUP_OWNER
+    request_and_validate_input "Please enter project group owner: "
+    PROJECT_GROUP_OWNER="${COMMUNITY_VALIDATED_INPUT}"
     debug "got PROJECT_GROUP_OWNER=${PROJECT_GROUP_OWNER}"
     echo
 
