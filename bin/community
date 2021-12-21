@@ -19,7 +19,6 @@ cmd_quit()
 
 # set defaults if not found in .communityrc
 : "${COMMUNITY_FILESYSTEM:='/lus/theta-fs0'}"
-: "${GENERATE_COMMANDS_ONLY:=true}"
 : "${COMMUNITY_SCRIPT_DEBUG:='n'}"
 : "${COMMUNITY_ROOT:='/soft/community'}"
 : "${EXISTING_PROJECT_PATH:='/projects'}"
@@ -68,10 +67,8 @@ cmd_help()
     printf "\n"
     printf "For deubgging info, set COMMUNITY_SCRIPT_DEBUG=y.\n"
     printf "\n"
-    printf "By default, this program runs in 'safe mode', i.e."
-    printf "commands will be generated and printed stdout but not executed.\n"
-    printf "To automatically execute generated commands,\n"
-    printf "set GENERATE_COMMANDS_ONLY to any value besides \"true\".\n"
+    printf "Commands will be generated to perform the operation,\n"
+    printf "Then prompted to execute, edit first, or abort.\n"
     printf "\n"
     printf "\n"
 }
@@ -110,7 +107,7 @@ cmd_create()
 
     request_and_validate_input "Please enter brief project_description: "
     PROJECT_DESCRIPTION="${COMMUNITY_VALIDATED_INPUT}"
-    debug "got PROJECT_DESCRIPTON=${PROJECT_DESCRIPTION}"
+    debug "got PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}"
     echo
 
     request_and_validate_input "Please enter project contact: "
@@ -284,38 +281,52 @@ cmd_archive()
 
 cmd_exit()
 { 
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]  
-    then 
-        echo 
-        echo
-        echo "Commands generated."
-        echo
-        echo "Please examine the following generated script before running."
-        echo 
-        echo "# <===== BEGIN ====>"
-        cat ${CMD_SCRIPT}
-        echo "# <====== END =====>"
-        echo
-    fi
+    echo 
+    echo
+    echo "Commands generated."
+    echo
+    echo "Please examine the following generated script before running."
+    echo 
+    echo "# <===== BEGIN ====>"
+    cat ${CMD_SCRIPT}
+    echo "# <====== END =====>"
+    echo
     
-    read -p "Run the generated script (y/n)? " run_generated_script
-    if [ $run_generated_script = "y" ] || [ $run_generated_script = "yes" ] 
-    then
-        echo
-        . ${CMD_SCRIPT}
-        echo
-    else
-        echo
-        echo "Script not run."
-        echo
-    fi
+    run_generated_script=""
+    while [ "$run_generated_script" = "" ]
+    do
+        read -p "Run the generated script (y/n/edit)? " run_generated_script
+        if [ $run_generated_script = "y" ]
+        then
+            echo
+            . ${CMD_SCRIPT}
+            echo
+        elif [ $run_generated_script = "edit" ] 
+        then 
+            vi ${CMD_SCRIPT}
+            echo 
+            echo "Please examine the following generated script before running."
+            echo 
+            echo "# <===== BEGIN ====>"
+            cat ${CMD_SCRIPT}
+            echo "# <====== END =====>"
+            echo
+            run_generated_script=""
+        else
+            echo
+            echo "Script not run."
+            echo
+        fi
+    done
         
     rm ${CMD_SCRIPT}
 
     exit $1
 }
 
-# Script execution begins here.
+# ------------------------------------------------------------
+
+# 'community' script entrypoint begins here.
 
 PROJECT_NAME="$2"
 [ ${GENERATE_COMMANDS_ONLY} == "true" ] && CMD_SCRIPT=$(mktemp)
