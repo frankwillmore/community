@@ -115,14 +115,38 @@ cmd_create()
     debug "got PROJECT_CONTACT=${PROJECT_CONTACT}"
     echo
 
-    request_and_validate_input "Please enter project user owner: "
-    PROJECT_USER_OWNER="${COMMUNITY_VALIDATED_INPUT}"
-    debug "got PROJECT_USER_OWNER=${PROJECT_USER_OWNER}"
+    PROJECT_USER_OWNER=""
+    while [ "${PROJECT_USER_OWNER}" = "" ]
+    do
+        request_and_validate_input "Please enter project user owner: "
+        PROJECT_USER_OWNER="${COMMUNITY_VALIDATED_INPUT}"
+        debug "got PROJECT_USER_OWNER=${PROJECT_USER_OWNER}"
+        # getent passwd to make sure this is a real user
+        getent passwd ${PROJECT_USER_OWNER}
+        if [ "$?" != 0 ] 
+        then 
+            printf ">>>${PROJECT_USER_OWNER}<<< not in the passwd database!!\n"
+            printf "Please try again.\n\n"
+            PROJECT_USER_OWNER=""
+        fi
+    done
     echo
 
-    request_and_validate_input "Please enter project group owner: "
-    PROJECT_GROUP_OWNER="${COMMUNITY_VALIDATED_INPUT}"
-    debug "got PROJECT_GROUP_OWNER=${PROJECT_GROUP_OWNER}"
+    PROJECT_GROUP_OWNER=""
+    while [ "${PROJECT_GROUP_OWNER}" = "" ]
+    do
+        request_and_validate_input "Please enter project group owner: "
+        PROJECT_GROUP_OWNER="${COMMUNITY_VALIDATED_INPUT}"
+        debug "got PROJECT_GROUP_OWNER=${PROJECT_GROUP_OWNER}"
+        # getent group to make sure this is a real group
+        getent group ${PROJECT_GROUP_OWNER}
+        if [ "$?" != 0 ] 
+        then 
+            printf ">>>${PROJECT_GROUP_OWNER}<<< not in the group database!!\n"
+            printf "Please try again.\n\n"
+            PROJECT_GROUP_OWNER=""
+        fi
+    done
     echo
 
     # Done gathering info, now go do it.
