@@ -128,81 +128,39 @@ cmd_create()
     # Done gathering info, now go do it.
 
     printf "creating software directory ${PROJECT_ROOT}..."
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo mkdir -p ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
-    else 
-        mkdir -p ${PROJECT_ROOT}
-    fi
+    echo "sudo mkdir -p ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
     printf "done.\n"
 
     printf "creating module directory ${MODULE_ROOT}..."
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo mkdir -p ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
-    else
-        mkdir -p ${MODULE_ROOT}
-    fi
+    echo "sudo mkdir -p ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
     printf "done.\n"
 
     TEMPLATED_MODULE=${MODULE_ROOT}/${PROJECT_NAME}
     printf "adding template module file ${TEMPLATED_MODULE}..."
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-    else 
-        cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}
-    fi
+    echo "sudo cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
     printf "done.\n"
 
     printf "Replacing module template tokens with project info..."
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo sed -i -e \"s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-        echo "sudo sed -i -e \"s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-        echo "sudo sed -i -e \"s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-        echo "sudo sed -i -e \"s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-    else
-        sed -i -e "s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g" ${TEMPLATED_MODULE}
-        sed -i -e "s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g" ${TEMPLATED_MODULE}
-        sed -i -e "s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g" ${TEMPLATED_MODULE}
-        sed -i -e "s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g" ${TEMPLATED_MODULE}
-    fi
+    echo "sudo sed -i -e \"s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+    echo "sudo sed -i -e \"s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+    echo "sudo sed -i -e \"s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+    echo "sudo sed -i -e \"s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
     printf "done.\n"
 
     echo "making project dirs:"
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo mkdir -p ${PROJECT_ROOT}/bin" | tee -a ${CMD_SCRIPT} 
-        echo "sudo mkdir -p ${PROJECT_ROOT}/share/man" | tee -a ${CMD_SCRIPT} 
-        echo "sudo mkdir -p ${PROJECT_ROOT}/lib64" | tee -a ${CMD_SCRIPT} 
-        echo "sudo mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig" | tee -a ${CMD_SCRIPT} 
-    else
-        mkdir -p ${PROJECT_ROOT}/bin
-        mkdir -p ${PROJECT_ROOT}/share/man
-        mkdir -p ${PROJECT_ROOT}/lib64
-        mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig
-    fi
+    echo "sudo mkdir -p ${PROJECT_ROOT}/bin" | tee -a ${CMD_SCRIPT} 
+    echo "sudo mkdir -p ${PROJECT_ROOT}/share/man" | tee -a ${CMD_SCRIPT} 
+    echo "sudo mkdir -p ${PROJECT_ROOT}/lib64" | tee -a ${CMD_SCRIPT} 
+    echo "sudo mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig" | tee -a ${CMD_SCRIPT} 
 
     echo "setting ownership..."
     
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
-        echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
-    else
-        sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}
-        sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}
-    fi
+    echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+    echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
 
     echo "setting quota..."
     
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
-    then
-        echo "sudo lfs setquota -g ${PROJECT_NAME} --block-softlimit 100G --block-hardlimit 105G ${COMMUNITY_FILESYSTEM}" | tee -a ${CMD_SCRIPT}
-    else
-        echo "sudo lfs setquota -g ${PROJECT_NAME} --block-softlimit 100G --block-hardlimit 105G ${COMMUNITY_FILESYSTEM}"
-    fi
+    echo "sudo lfs setquota -g ${PROJECT_NAME} --block-softlimit 100G --block-hardlimit 105G ${COMMUNITY_FILESYSTEM}" | tee -a ${CMD_SCRIPT}
 
     printf "done.\n"
 
