@@ -41,15 +41,15 @@ request_and_validate_input()
     COMMUNITY_VALIDATED_INPUT=""
     while [ "${COMMUNITY_VALIDATED_INPUT}" = "" ]
     do  
-        read -p "$1" COMMUNITY_UNVALIDATED_INPUT
-        echo "${COMMUNITY_UNVALIDATED_INPUT}" | egrep "${COMMUNITY_VALIDATE_INPUT_REGEX}" 
+        read -r -p "$1" COMMUNITY_UNVALIDATED_INPUT
+        echo "${COMMUNITY_UNVALIDATED_INPUT}" | grep -E "${COMMUNITY_VALIDATE_INPUT_REGEX}" 
         if [ "$?" = 0 ] 
         then
             COMMUNITY_VALIDATED_INPUT="${COMMUNITY_UNVALIDATED_INPUT}"
             return
         else
-            printf "Input not valid, must use only characters in regular expression: \n" 
-            printf "${COMMUNITY_VALIDATE_INPUT_REGEX}\n\n"
+            printf "Input not valid, must use only characters in regular expression:\n" 
+            printf "%s\n\n" "${COMMUNITY_VALIDATE_INPUT_REGEX}"
         fi  
     done
 }
@@ -84,11 +84,12 @@ cmd_create()
 
     # check project eligibility
     eligible="false"
-    for path in $(echo ${EXISTING_PROJECT_PATH} | sed -e "s/:/ /g")
+    # for path in $(echo ${EXISTING_PROJECT_PATH} | sed -e "s/:/ /g")
+    for path in ${EXISTING_PROJECT_PATH//:/ }
     do
         debug "searching ${path}..."
-        echo ${path}/${PROJECT_NAME} 
-        if [ -e ${path}/${PROJECT_NAME} ] 
+        echo "${path}/${PROJECT_NAME}"
+        if [ -e "${path}/${PROJECT_NAME}" ] 
         then 
             eligible="true" 
             echo "found elgible path: ${path}/${PROJECT_NAME}"
@@ -101,7 +102,7 @@ cmd_create()
 
     echo "Checking community doesn't already exist...."
     echo
-    [ -e ${PROJECT_ROOT} ] && cmd_quit "Project ${PROJECT_NAME} already exists" 126
+    [ -e "${PROJECT_ROOT}" ] && cmd_quit "Project ${PROJECT_NAME} already exists" 126
 
     # All is well, fill out module template fields.
 
@@ -122,10 +123,10 @@ cmd_create()
         PROJECT_USER_OWNER="${COMMUNITY_VALIDATED_INPUT}"
         debug "got PROJECT_USER_OWNER=${PROJECT_USER_OWNER}"
         # getent passwd to make sure this is a real user
-        getent passwd ${PROJECT_USER_OWNER}
+        getent passwd "${PROJECT_USER_OWNER}"
         if [ "$?" != 0 ] 
         then 
-            printf ">>>${PROJECT_USER_OWNER}<<< not in the passwd database!!\n"
+            printf ">>>%s<<< not in the passwd database!!\n" "${PROJECT_USER_OWNER}"
             printf "Please try again.\n\n"
             PROJECT_USER_OWNER=""
         fi
@@ -139,10 +140,10 @@ cmd_create()
         PROJECT_GROUP_OWNER="${COMMUNITY_VALIDATED_INPUT}"
         debug "got PROJECT_GROUP_OWNER=${PROJECT_GROUP_OWNER}"
         # getent group to make sure this is a real group
-        getent group ${PROJECT_GROUP_OWNER}
+        getent group "${PROJECT_GROUP_OWNER}"
         if [ "$?" != 0 ] 
         then 
-            printf ">>>${PROJECT_GROUP_OWNER}<<< not in the group database!!\n"
+            printf ">>>%s<<< not in the group database!!\n" "${PROJECT_GROUP_OWNER}"
             printf "Please try again.\n\n"
             PROJECT_GROUP_OWNER=""
         fi
@@ -151,40 +152,40 @@ cmd_create()
 
     # Done gathering info, now go do it.
 
-    printf "creating software directory ${PROJECT_ROOT}..."
-    echo "sudo mkdir -p ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+    printf "creating software directory %s..." "${PROJECT_ROOT}"
+    echo "sudo mkdir -p ${PROJECT_ROOT}" | tee -a "${CMD_SCRIPT}" 
     printf "done.\n"
 
-    printf "creating module directory ${MODULE_ROOT}..."
-    echo "sudo mkdir -p ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
+    printf "creating module directory %s..." "${MODULE_ROOT}"
+    echo "sudo mkdir -p ${MODULE_ROOT}" | tee -a "${CMD_SCRIPT}"
     printf "done.\n"
 
-    TEMPLATED_MODULE=${MODULE_ROOT}/${PROJECT_NAME}
-    printf "adding template module file ${TEMPLATED_MODULE}..."
-    echo "sudo cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+    TEMPLATED_MODULE="${MODULE_ROOT}/${PROJECT_NAME}"
+    printf "adding template module file %s..." "${TEMPLATED_MODULE}"
+    echo "sudo cp ${COMMUNITY_ROOT}/module_templates/module_template.tcl ${TEMPLATED_MODULE}" | tee -a "${CMD_SCRIPT}"
     printf "done.\n"
 
     printf "Replacing module template tokens with project info..."
-    echo "sudo sed -i -e \"s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-    echo "sudo sed -i -e \"s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-    echo "sudo sed -i -e \"s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
-    echo "sudo sed -i -e \"s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g\" ${TEMPLATED_MODULE}" | tee -a ${CMD_SCRIPT} 
+    echo "sudo sed -i -e \"s/\[\[PROJECT_NAME\]\]/${PROJECT_NAME}/g\" ${TEMPLATED_MODULE}" | tee -a "${CMD_SCRIPT}"
+    echo "sudo sed -i -e \"s#\[\[PROJECT_ROOT\]\]#${PROJECT_ROOT}#g\" ${TEMPLATED_MODULE}" | tee -a "${CMD_SCRIPT}"
+    echo "sudo sed -i -e \"s/\[\[PROJECT_CONTACT\]\]/${PROJECT_CONTACT}/g\" ${TEMPLATED_MODULE}" | tee -a "${CMD_SCRIPT}"
+    echo "sudo sed -i -e \"s/\[\[PROJECT_DESCRIPTION\]\]/${PROJECT_DESCRIPTION}/g\" ${TEMPLATED_MODULE}" | tee -a "${CMD_SCRIPT}"
     printf "done.\n"
 
     echo "making project dirs:"
-    echo "sudo mkdir -p ${PROJECT_ROOT}/bin" | tee -a ${CMD_SCRIPT} 
-    echo "sudo mkdir -p ${PROJECT_ROOT}/share/man" | tee -a ${CMD_SCRIPT} 
-    echo "sudo mkdir -p ${PROJECT_ROOT}/lib64" | tee -a ${CMD_SCRIPT} 
-    echo "sudo mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig" | tee -a ${CMD_SCRIPT} 
+    echo "sudo mkdir -p ${PROJECT_ROOT}/bin" | tee -a "${CMD_SCRIPT}"
+    echo "sudo mkdir -p ${PROJECT_ROOT}/share/man" | tee -a "${CMD_SCRIPT}"
+    echo "sudo mkdir -p ${PROJECT_ROOT}/lib64" | tee -a "${CMD_SCRIPT}"
+    echo "sudo mkdir -p ${PROJECT_ROOT}/lib64/pkgconfig" | tee -a "${CMD_SCRIPT}"
 
     echo "setting ownership..."
     
-    echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
-    echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
+    echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${PROJECT_ROOT}" | tee -a "${CMD_SCRIPT}"
+    echo "sudo chown -R ${PROJECT_USER_OWNER}:${PROJECT_GROUP_OWNER} ${MODULE_ROOT}" | tee -a "${CMD_SCRIPT}"
 
     echo "setting quota..."
     
-    echo "sudo lfs setquota -g ${PROJECT_NAME} --block-softlimit 100G --block-hardlimit 105G ${COMMUNITY_FILESYSTEM}" | tee -a ${CMD_SCRIPT}
+    echo "sudo lfs setquota -g ${PROJECT_NAME} --block-softlimit 100G --block-hardlimit 105G ${COMMUNITY_FILESYSTEM}" | tee -a "${CMD_SCRIPT}"
 
     printf "done.\n"
 
@@ -204,7 +205,7 @@ cmd_delete()
     echo
     printf "Checking if community exists...."
     sleep 1
-    if [ -e ${PROJECT_ROOT} ] 
+    if [ -e "${PROJECT_ROOT}" ] 
     then 
         printf "yes.\n\n"
     else 
@@ -212,24 +213,24 @@ cmd_delete()
         cmd_quit "Project ${PROJECT_NAME} does not exist." 126
     fi
 
-    read -p "Confirm delete (enter 'y' to confirm)? " confirm
-    [ ${confirm} == "y" ] || cmd_quit "Change not confirmed. Exiting." 0
+    read -r -p "Confirm delete (enter 'y' to confirm)? " confirm
+    [ "${confirm}" == "y" ] || cmd_quit "Change not confirmed. Exiting." 0
 
     echo "removing software directory ${PROJECT_ROOT}"
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    if [ "${GENERATE_COMMANDS_ONLY}" == "true" ]
     then
-        echo "sudo rm -rfv ${PROJECT_ROOT}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo rm -rfv ${PROJECT_ROOT}" | tee -a "${CMD_SCRIPT}"
     else
-        rm -rfv ${PROJECT_ROOT}
+        rm -rfv "${PROJECT_ROOT}"
     fi
     echo
 
     echo "deleting module directory ${MODULE_ROOT}"
-    if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+    if [ "${GENERATE_COMMANDS_ONLY}" == "true" ]
     then
-        echo "sudo rm -rfv ${MODULE_ROOT}" | tee -a ${CMD_SCRIPT} 
+        echo "sudo rm -rfv ${MODULE_ROOT}" | tee -a "${CMD_SCRIPT}"
     else
-        rm -rfv ${MODULE_ROOT}
+        rm -rfv "${MODULE_ROOT}"
     fi
     echo
 
@@ -242,17 +243,17 @@ cmd_delete()
 cmd_archive() 
 {
     echo "archiving $PROJECT_NAME"
-    printf "Change user ownership of ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME} to community?\n"
-    read -p "(enter y to confirm) " confirm
-    if [ $confirm = "y" ] || [ $confirm = "yes" ] 
+    printf "Change user ownership of %s/%s to community?\n" "${COMMUNITY_PROJECT_DIR}" "${PROJECT_NAME}"
+    read -r -p "(enter y to confirm) " confirm
+    if [ "$confirm" = "y" ] || [ "$confirm" = "yes" ] 
     then
-        if [ ${GENERATE_COMMANDS_ONLY} == "true" ]
+        if [ "${GENERATE_COMMANDS_ONLY}" == "true" ]
         then
-            echo "sudo chown -R ${ARCHIVE_USER_OWNER}:${ARCHIVE_GROUP_OWNER} ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
-            echo "sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a ${CMD_SCRIPT} 
+            echo "sudo chown -R ${ARCHIVE_USER_OWNER}:${ARCHIVE_GROUP_OWNER} ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a "${CMD_SCRIPT}"
+            echo "sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}" | tee -a "${CMD_SCRIPT}"
         else
-            sudo chown -R ${ARCHIVE_USER_OWNER}:${ARCHIVE_GROUP_OWNER} ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
-            sudo chmod -w -R ${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}
+            sudo chown -R "${ARCHIVE_USER_OWNER}:${ARCHIVE_GROUP_OWNER}" "${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
+            sudo chmod -w -R "${COMMUNITY_PROJECT_DIR}/${PROJECT_NAME}"
         fi
     else
         echo "declining to update."
@@ -270,27 +271,27 @@ cmd_exit()
     echo "Please examine the following generated script before running."
     echo 
     echo "# <===== BEGIN ====>"
-    cat ${CMD_SCRIPT}
+    cat "${CMD_SCRIPT}"
     echo "# <====== END =====>"
     echo
     
     run_generated_script=""
     while [ "$run_generated_script" = "" ]
     do
-        read -p "Run the generated script (y/n/edit)? " run_generated_script
-        if [ $run_generated_script = "y" ]
+        read -r -p "Run the generated script (y/n/edit)? " run_generated_script
+        if [ "$run_generated_script" = "y" ]
         then
             echo
-            . ${CMD_SCRIPT}
+            . "${CMD_SCRIPT}"
             echo
-        elif [ $run_generated_script = "edit" ] 
+        elif [ "$run_generated_script" = "edit" ] 
         then 
-            vi ${CMD_SCRIPT}
+            vi "${CMD_SCRIPT}"
             echo 
             echo "Please examine the following generated script before running."
             echo 
             echo "# <===== BEGIN ====>"
-            cat ${CMD_SCRIPT}
+            cat "${CMD_SCRIPT}"
             echo "# <====== END =====>"
             echo
             run_generated_script=""
@@ -301,9 +302,9 @@ cmd_exit()
         fi
     done
         
-    rm ${CMD_SCRIPT}
+    rm "${CMD_SCRIPT}"
 
-    exit $1
+    exit "$1"
 }
 
 # ------------------------------------------------------------
@@ -311,7 +312,7 @@ cmd_exit()
 # 'community' script entrypoint begins here.
 
 PROJECT_NAME="$2"
-[ ${GENERATE_COMMANDS_ONLY} == "true" ] && CMD_SCRIPT=$(mktemp)
+[ "${GENERATE_COMMANDS_ONLY}" == "true" ] && CMD_SCRIPT=$(mktemp)
 
 # Process the actual command
 case "$1" in
@@ -319,16 +320,16 @@ case "$1" in
         cmd_help
         ;;
     create)
-        [ -z ${PROJECT_NAME} ] && cmd_quit "no project specified"
-        cmd_create ${PROJECT_NAME}
+        [ -z "${PROJECT_NAME}" ] && cmd_quit "no project specified"
+        cmd_create "${PROJECT_NAME}"
         ;;
     archive)
-        [ -z ${PROJECT_NAME} ] && cmd_quit "no project specified"
-        cmd_archive ${PROJECT_NAME}
+        [ -z "${PROJECT_NAME}" ] && cmd_quit "no project specified"
+        cmd_archive "${PROJECT_NAME}"
         ;;
     delete)
-        [ -z ${PROJECT_NAME} ] && cmd_quit "no project specified"
-        cmd_delete ${PROJECT_NAME}
+        [ -z "${PROJECT_NAME}" ] && cmd_quit "no project specified"
+        cmd_delete "${PROJECT_NAME}"
         ;;
     *)
         cmd_quit "Sorry, I didn't understand the command \"$1\". Exiting." 127
