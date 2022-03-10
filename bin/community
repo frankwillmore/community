@@ -83,12 +83,13 @@ cmd_create()
     MODULE_ROOT="${COMMUNITY_PROJECT_MODULE_DIR}/${PROJECT_NAME}"
 
     # check project eligibility
+    echo "Eligibility is based on existence of project in eligible path."
     eligible="false"
     # for path in $(echo ${EXISTING_PROJECT_PATH} | sed -e "s/:/ /g")
     for path in ${EXISTING_PROJECT_PATH//:/ }
     do
         debug "searching ${path}..."
-        echo "${path}/${PROJECT_NAME}"
+        echo "searching for ${path}/${PROJECT_NAME}"
         if [ -e "${path}/${PROJECT_NAME}" ] 
         then 
             eligible="true" 
@@ -101,8 +102,9 @@ cmd_create()
     echo
 
     echo "Checking community doesn't already exist...."
-    echo
     [ -e "${PROJECT_ROOT}" ] && cmd_quit "Project ${PROJECT_NAME} already exists" 126
+    echo "OK"
+    echo
 
     # All is well, fill out module template fields.
 
@@ -111,7 +113,7 @@ cmd_create()
     debug "got PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}"
     echo
 
-    request_and_validate_input "Please enter project contact: "
+    request_and_validate_input "Please enter project contact [e.g. Rob Banks, FDIC rob.banks@fdic.gov]: "
     PROJECT_CONTACT="${COMMUNITY_VALIDATED_INPUT}"
     debug "got PROJECT_CONTACT=${PROJECT_CONTACT}"
     echo
@@ -119,7 +121,7 @@ cmd_create()
     PROJECT_USER_OWNER=""
     while [ "${PROJECT_USER_OWNER}" = "" ]
     do
-        request_and_validate_input "Please enter project user owner: "
+        request_and_validate_input "Please enter the username of the user who will own this community space: "
         PROJECT_USER_OWNER="${COMMUNITY_VALIDATED_INPUT}"
         debug "got PROJECT_USER_OWNER=${PROJECT_USER_OWNER}"
         # getent passwd to make sure this is a real user
@@ -136,7 +138,7 @@ cmd_create()
     PROJECT_GROUP_OWNER=""
     while [ "${PROJECT_GROUP_OWNER}" = "" ]
     do
-        request_and_validate_input "Please enter project group owner: "
+        request_and_validate_input "Please enter the name of the group that will own this community space (generally the same as the project name above): "
         PROJECT_GROUP_OWNER="${COMMUNITY_VALIDATED_INPUT}"
         debug "got PROJECT_GROUP_OWNER=${PROJECT_GROUP_OWNER}"
         # getent group to make sure this is a real group
@@ -304,6 +306,7 @@ cmd_exit()
         
     rm "${CMD_SCRIPT}"
 
+    echo "done."
     exit "$1"
 }
 

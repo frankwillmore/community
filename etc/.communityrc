@@ -27,4 +27,4 @@ COMMUNITY_SCRIPT_DEBUG="n"
 GENERATE_COMMANDS_ONLY=true
 
 # Extended regular expression to use when validating inputs
-COMMUNITY_VALIDATE_INPUT_REGEX="^[0-9a-zA-Z\.\:\;\(\)\ -]+$"        
+COMMUNITY_VALIDATE_INPUT_REGEX="^[0-9a-zA-Z\.\@\,\:\;\(\)\ -]+$"        
